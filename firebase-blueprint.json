@@ -1,0 +1,89 @@
+{
+  "entities": {
+    "userProfile": {
+      "title": "User Profile",
+      "description": "User profile with display metadata and preferences",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "maxLength": 128 },
+        "email": { "type": "string", "format": "email", "maxLength": 256 },
+        "displayName": { "type": "string", "maxLength": 100 },
+        "photoURL": { "type": "string", "maxLength": 1000 },
+        "role": { "type": "string", "enum": ["user", "creator", "admin"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email"]
+    },
+    "project": {
+      "title": "Creative Campaign Project",
+      "description": "Video production and marketing creative campaign project",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "userId": { "type": "string", "maxLength": 128 },
+        "title": { "type": "string", "maxLength": 200 },
+        "clientName": { "type": "string", "maxLength": 100 },
+        "brandNiche": { "type": "string", "maxLength": 100 },
+        "videoType": { "type": "string", "maxLength": 50 },
+        "targetPlatform": { "type": "string", "maxLength": 50 },
+        "primaryLanguage": { "type": "string", "maxLength": 50 },
+        "aspectRatio": { "type": "string", "maxLength": 20 },
+        "targetLengthSec": { "type": "number" },
+        "brandGuidelines": { "type": "string", "maxLength": 2000 },
+        "deliverablesNotes": { "type": "string", "maxLength": 2000 },
+        "rawBrief": { "type": "string", "maxLength": 5000 },
+        "status": { "type": "string", "enum": ["active", "review", "completed"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "userId", "title"]
+    },
+    "chatSession": {
+      "title": "Chat Session",
+      "description": "Conversation session thread for creative studio assistant",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "userId": { "type": "string", "maxLength": 128 },
+        "title": { "type": "string", "maxLength": 200 },
+        "model": { "type": "string", "maxLength": 100 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "userId", "title"]
+    },
+    "chatMessage": {
+      "title": "Chat Message",
+      "description": "Individual message within a creative studio chat session",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "sessionId": { "type": "string", "maxLength": 128 },
+        "userId": { "type": "string", "maxLength": 128 },
+        "role": { "type": "string", "enum": ["user", "assistant", "system"] },
+        "content": { "type": "string", "maxLength": 20000 },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "sessionId", "userId", "role", "content"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "userProfile",
+      "description": "User profile records containing account info and settings"
+    },
+    "/users/{userId}/projects/{projectId}": {
+      "schema": "project",
+      "description": "Creative video and campaign projects owned by the user"
+    },
+    "/users/{userId}/chats/{chatId}": {
+      "schema": "chatSession",
+      "description": "Chat threads initiated by the authenticated user"
+    },
+    "/users/{userId}/chats/{chatId}/messages/{messageId}": {
+      "schema": "chatMessage",
+      "description": "Dialogue messages associated with a user chat session"
+    }
+  }
+}

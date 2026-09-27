@@ -1,0 +1,136 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Entity Validators
+    function isValidUserProfile(data) {
+      return data.keys().hasAll(['uid', 'email']) &&
+        data.keys().hasOnly(['uid', 'email', 'displayName', 'photoURL', 'role', 'createdAt', 'updatedAt']) &&
+        data.uid is string && data.uid == request.auth.uid && data.uid.size() <= 128 &&
+        data.email is string && data.email.size() <= 256 &&
+        (!('displayName' in data) || (data.displayName is string && data.displayName.size() <= 100)) &&
+        (!('photoURL' in data) || (data.photoURL is string && data.photoURL.size() <= 1000)) &&
+        (!('role' in data) || (data.role in ['user', 'creator'])) &&
+        (!('createdAt' in data) || (data.createdAt is string && data.createdAt.size() <= 50)) &&
+        (!('updatedAt' in data) || (data.updatedAt is string && data.updatedAt.size() <= 50));
+    }
+
+    function isValidProject(data) {
+      return data.keys().hasAll(['id', 'userId', 'title']) &&
+        data.keys().hasOnly(['id', 'userId', 'title', 'clientName', 'brandNiche', 'videoType', 'targetPlatform', 'primaryLanguage', 'aspectRatio', 'targetLengthSec', 'brandGuidelines', 'deliverablesNotes', 'rawBrief', 'status', 'createdAt', 'updatedAt']) &&
+        data.id is string && data.id.size() <= 128 &&
+        data.userId is string && data.userId == request.auth.uid &&
+        data.title is string && data.title.size() > 0 && data.title.size() <= 200 &&
+        (!('clientName' in data) || (data.clientName is string && data.clientName.size() <= 100)) &&
+        (!('brandNiche' in data) || (data.brandNiche is string && data.brandNiche.size() <= 100)) &&
+        (!('videoType' in data) || (data.videoType is string && data.videoType.size() <= 50)) &&
+        (!('targetPlatform' in data) || (data.targetPlatform is string && data.targetPlatform.size() <= 50)) &&
+        (!('primaryLanguage' in data) || (data.primaryLanguage is string && data.primaryLanguage.size() <= 50)) &&
+        (!('aspectRatio' in data) || (data.aspectRatio is string && data.aspectRatio.size() <= 20)) &&
+        (!('targetLengthSec' in data) || (data.targetLengthSec is number)) &&
+        (!('brandGuidelines' in data) || (data.brandGuidelines is string && data.brandGuidelines.size() <= 2000)) &&
+        (!('deliverablesNotes' in data) || (data.deliverablesNotes is string && data.deliverablesNotes.size() <= 2000)) &&
+        (!('rawBrief' in data) || (data.rawBrief is string && data.rawBrief.size() <= 5000)) &&
+        (!('status' in data) || (data.status in ['active', 'review', 'completed'])) &&
+        (!('createdAt' in data) || (data.createdAt is string && data.createdAt.size() <= 50)) &&
+        (!('updatedAt' in data) || (data.updatedAt is string && data.updatedAt.size() <= 50));
+    }
+
+    function isValidChatSession(data) {
+      return data.keys().hasAll(['id', 'userId', 'title']) &&
+        data.keys().hasOnly(['id', 'userId', 'title', 'model', 'createdAt', 'updatedAt']) &&
+        data.id is string && data.id.size() <= 128 &&
+        data.userId is string && data.userId == request.auth.uid &&
+        data.title is string && data.title.size() > 0 && data.title.size() <= 200 &&
+        (!('model' in data) || (data.model is string && data.model.size() <= 100)) &&
+        (!('createdAt' in data) || (data.createdAt is string && data.createdAt.size() <= 50)) &&
+        (!('updatedAt' in data) || (data.updatedAt is string && data.updatedAt.size() <= 50));
+    }
+
+    function isValidChatMessage(data) {
+      return data.keys().hasAll(['id', 'sessionId', 'userId', 'role', 'content']) &&
+        data.keys().hasOnly(['id', 'sessionId', 'userId', 'role', 'content', 'timestamp']) &&
+        data.id is string && data.id.size() <= 128 &&
+        data.sessionId is string && data.sessionId.size() <= 128 &&
+        data.userId is string && data.userId == request.auth.uid &&
+        data.role in ['user', 'assistant', 'system'] &&
+        data.content is string && data.content.size() <= 20000 &&
+        (!('timestamp' in data) || (data.timestamp is string && data.timestamp.size() <= 50));
+    }
+
+    // User Profile Rules
+    match /users/{userId} {
+      allow get: if isOwner(userId) && isValidId(userId);
+      allow list: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidId(userId) && isValidUserProfile(incoming());
+      allow update: if isOwner(userId) && isValidId(userId) && isValidUserProfile(incoming()) &&
+        incoming().uid == existing().uid &&
+        incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'photoURL', 'role', 'updatedAt']);
+      allow delete: if isOwner(userId) && isValidId(userId);
+
+      // Projects subcollection
+      match /projects/{projectId} {
+        allow get: if isOwner(userId) && isValidId(projectId);
+        allow list: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidId(projectId) && isValidProject(incoming()) && incoming().userId == userId;
+        allow update: if isOwner(userId) && isValidId(projectId) && isValidProject(incoming()) &&
+          incoming().id == existing().id &&
+          incoming().userId == existing().userId &&
+          incoming().diff(existing()).affectedKeys().hasOnly(['title', 'clientName', 'brandNiche', 'videoType', 'targetPlatform', 'primaryLanguage', 'aspectRatio', 'targetLengthSec', 'brandGuidelines', 'deliverablesNotes', 'rawBrief', 'status', 'updatedAt']);
+        allow delete: if isOwner(userId) && isValidId(projectId);
+      }
+
+      // Chat Sessions subcollection
+      match /chats/{chatId} {
+        allow get: if isOwner(userId) && isValidId(chatId);
+        allow list: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidId(chatId) && isValidChatSession(incoming()) && incoming().userId == userId;
+        allow update: if isOwner(userId) && isValidId(chatId) && isValidChatSession(incoming()) &&
+          incoming().id == existing().id &&
+          incoming().userId == existing().userId &&
+          incoming().diff(existing()).affectedKeys().hasOnly(['title', 'model', 'updatedAt']);
+        allow delete: if isOwner(userId) && isValidId(chatId);
+
+        // Chat Messages subcollection
+        match /messages/{messageId} {
+          allow get: if isOwner(userId) && isValidId(messageId);
+          allow list: if isOwner(userId);
+          allow create: if isOwner(userId) && isValidId(messageId) && isValidChatMessage(incoming()) &&
+            incoming().userId == userId && incoming().sessionId == chatId;
+          allow update: if isOwner(userId) && isValidId(messageId) && isValidChatMessage(incoming()) &&
+            incoming().id == existing().id &&
+            incoming().userId == existing().userId &&
+            incoming().sessionId == existing().sessionId &&
+            incoming().diff(existing()).affectedKeys().hasOnly(['content', 'timestamp']);
+          allow delete: if isOwner(userId) && isValidId(messageId);
+        }
+      }
+    }
+  }
+}

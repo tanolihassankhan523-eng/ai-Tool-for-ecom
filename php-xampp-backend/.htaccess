@@ -1,0 +1,16 @@
+# CineFlow AI - Apache / XAMPP Rewrite Rules & Security
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /videocraft-ai/
+
+    # Security: Block sensitive directories & files
+    RewriteRule ^(\.git|\.env|storage/uploads/.*\.php) - [F,L]
+
+    # CORS Headers
+    Header set Access-Control-Allow-Origin "*"
+    Header set Access-Control-Allow-Methods "GET, POST, OPTIONS, PUT, DELETE"
+    Header set Access-Control-Allow-Headers "Content-Type, Authorization, X-Requested-With"
+</IfModule>
+
+# Disable directory browsing
+Options -Indexes

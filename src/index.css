@@ -1,0 +1,157 @@
+@import "tailwindcss";
+
+:root {
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', Consolas, Monaco, monospace;
+}
+
+/* Light Theme Variables */
+.theme-light {
+  --bg-canvas: #f8fafc;
+  --bg-sidebar: #f1f5f9;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f8fafc;
+  --bg-surface: #e2e8f0;
+  --border-subtle: #e2e8f0;
+  --border-strong: #cbd5e1;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --accent-primary: #4f46e5;
+  --accent-hover: #4338ca;
+  --accent-soft: rgba(79, 70, 229, 0.08);
+}
+
+/* Dark Theme Variables (Claude & ChatGPT Caliber Neutral Charcoal) */
+.theme-dark {
+  --bg-canvas: #090d16;
+  --bg-sidebar: #0d121f;
+  --bg-card: #111827;
+  --bg-card-hover: #162032;
+  --bg-surface: #1f2937;
+  --border-subtle: rgba(255, 255, 255, 0.07);
+  --border-strong: rgba(255, 255, 255, 0.12);
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --accent-primary: #6366f1;
+  --accent-hover: #4f46e5;
+  --accent-soft: rgba(99, 102, 241, 0.12);
+}
+
+@layer base {
+  body {
+    font-family: var(--font-sans);
+    color: var(--text-primary);
+    background-color: var(--bg-canvas);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+  }
+
+  code, pre, .font-mono {
+    font-family: var(--font-mono);
+  }
+}
+
+/* Minimalist Scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.25);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.5);
+}
+
+/* SaaS Card & Container Primitives */
+.saas-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 1rem;
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.saas-card:hover {
+  border-color: var(--border-strong);
+}
+
+.saas-card-interactive:hover {
+  border-color: rgba(99, 102, 241, 0.35);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.25);
+}
+
+/* Subtle border glow */
+.saas-accent-border {
+  border: 1px solid rgba(99, 102, 241, 0.25);
+}
+
+.saas-accent-border:hover {
+  border-color: rgba(99, 102, 241, 0.5);
+}
+
+/* Input Focus */
+.saas-input {
+  background-color: rgba(15, 23, 42, 0.4);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  border-radius: 0.75rem;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.saas-input:focus {
+  border-color: #6366f1;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+}
+
+/* Chat Canvas Line Height & Prose */
+.chat-prose {
+  line-height: 1.65;
+  letter-spacing: -0.01em;
+}
+
+.chat-prose p {
+  margin-bottom: 0.85em;
+}
+
+.chat-prose p:last-child {
+  margin-bottom: 0;
+}
+
+.chat-prose ul, .chat-prose ol {
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+  padding-left: 1.25em;
+}
+
+.chat-prose li {
+  margin-bottom: 0.35em;
+}
+
+/* Waveform Bars Animation */
+@keyframes waveBar {
+  0%, 100% { height: 4px; }
+  50% { height: 26px; }
+}
+
+.wave-bar {
+  animation: waveBar 1.2s ease-in-out infinite;
+}
+
+/* Accessibility Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

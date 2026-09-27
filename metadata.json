@@ -1,0 +1,6 @@
+{
+  "name": "CineFlow AI - Video Creative Copilot",
+  "description": "Personal multilingual AI assistant for e-commerce video editors: brief analyzer, script & storyboard generator, Meta Ads research, and local Ollama/Gemini integration.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
